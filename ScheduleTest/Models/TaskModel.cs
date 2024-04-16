@@ -3,8 +3,7 @@ namespace ScheduleTest.Models
 {
     public class TaskModel
     {
-        public string Name { get; set; }
-
+        public string Name => StartTime.ToString() +" "+ DeadLine.ToString();
         public DateTime DeadLine { get; set; }
 
         public DateTime StartTime { get; set; }

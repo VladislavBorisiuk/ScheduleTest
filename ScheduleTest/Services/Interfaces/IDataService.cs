@@ -6,7 +6,7 @@ namespace ScheduleTest.Services.Interfaces
 {
     internal interface IDataService
     {
-        public AvlTree<int, TaskModel> GenerateRandomTree();
+        public Dictionary<int, List<TaskModel>> GenerateList();
 
     }
 }

@@ -3,6 +3,7 @@ using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
 using ScheduleTest.ViewModels.Base;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 
 namespace ScheduleTest.ViewModels
 {
@@ -12,13 +13,22 @@ namespace ScheduleTest.ViewModels
         private readonly IDataService _DataService;
 
 
-        private AvlTree<int, TaskModel> _avlTree;
+        private Dictionary<int, List<TaskModel>> taskList;
 
-        public AvlTree<int, TaskModel> AvlTree
+        public Dictionary<int, List<TaskModel>> TaskList
         {
-            get => _avlTree;
+            get => taskList;
 
-            set => _avlTree = value;
+            set => taskList = value;
+        }
+
+        private int[] counts ;
+        
+        public int[] Counts
+        {
+            get => counts;
+
+            set => counts = value;
         }
 
         private ObservableCollection<TaskModel> models;
@@ -53,16 +63,34 @@ namespace ScheduleTest.ViewModels
             _UserDialog = UserDialog;
             _DataService = DataService;
 
-            AvlTree = _DataService.GenerateRandomTree();
+            TaskList = _DataService.GenerateList();
 
-            int count = CountNodes(AvlTree.Root);
-
-            ObservableCollection<TaskModel> collection = new ObservableCollection<TaskModel>();
-            Traverse(AvlTree.Root, collection);
-            Models = collection;
+            Counts = new int[3];
+            TypeCount();
         }
-
-        private static void Traverse(AvlNode<int, TaskModel> node, ObservableCollection<TaskModel> collection)
+        
+        private async Task TypeCount()
+        {
+            foreach (var task in TaskList)
+            {
+                foreach (var item in task.Value)
+                {
+                    switch (item.Type)
+                    {
+                        case "Complete":
+                            Counts[0]++;
+                            break;
+                        case "InProcess":
+                            Counts[1]++;
+                            break;
+                        case "UnComplete":
+                            Counts[2]++;
+                            break;
+                    }
+                }
+            }
+        }
+        private static void Traverse(AvlNode<DateTime, TaskModel> node, ObservableCollection<TaskModel> collection)
         {
             if (node != null)
             {
@@ -72,7 +100,7 @@ namespace ScheduleTest.ViewModels
             }
         }
 
-        private int CountNodes(AvlNode<int, TaskModel> node)
+        private int CountNodes(AvlNode<DateTime, TaskModel> node)
         {
             if (node == null)
             {

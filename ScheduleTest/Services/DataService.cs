@@ -1,94 +1,78 @@
 ﻿using Bitlush;
 using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScheduleTest.Services
 {
     internal class DataService : IDataService
     {
-        private readonly AvlTree<int, TaskModel> _avlTree = new AvlTree<int, TaskModel>();
+        private readonly Dictionary<int, List<TaskModel>> _layerTaskLists = new Dictionary<int, List<TaskModel>>();
 
-        public AvlTree<int, TaskModel> GenerateRandomTree()
+        public Dictionary<int, List<TaskModel>> GenerateList()
         {
+            var listDictionary = new Dictionary<int, List<TaskModel>>();
+            var treeDictionary = GenerateRandomTrees();
+            foreach (var kvp in treeDictionary)
+            {
+                var avlTree = kvp.Value;
+                var taskList = avlTree.Select(node => node.Value).ToList();
+                listDictionary[kvp.Key] = taskList;
+            }
+
+            return listDictionary;
+        }
+
+        private Dictionary<int, AvlTree<DateTime, TaskModel>> GenerateRandomTrees()
+        {
+            var treeDictionary = new Dictionary<int, AvlTree<DateTime, TaskModel>>();
             Random random = new Random();
-            int count = random.Next(10, 1000);
-            HashSet<int> usedKeys = new HashSet<int>(); // Для отслеживания уже использованных ключей
+            int count = random.Next(10, 10000);
             for (int i = 0; i < count; i++)
             {
-                int key;
-                // Генерируем уникальный ключ, который еще не использовался
-                do
-                {
-                    key = random.Next(100000); // Можно выбрать нужный диапазон для ключей
-                } while (usedKeys.Contains(key));
-
                 // Генерируем случайные даты для StartTime и DeadLine
                 DateTime today = DateTime.Today;
-                DateTime startTime = today.AddDays(random.Next(-365, 365)); // случайная дата в пределах последних 30 дней
+                DateTime startTime = today.AddDays(random.Next(-1000, 1000)); // случайная дата в пределах последних 30 дней
                 DateTime deadLine = startTime.AddDays(random.Next(1, 30)); // случайная дата в пределах следующих 30 дней
 
                 TaskModel task = new TaskModel
                 {
-                    Name = $"Task {i + 1}",
                     DeadLine = deadLine,
                     StartTime = startTime,
                     Type = GetRandomType(random),
-                    Layer = random.Next(1, 10)
+                    Layer = random.Next(1, 50)
                 };
-
-                if (IsOverlapping(task))
-                {
-                    continue;
-                }
-
-                _avlTree.Insert(key, task);
-                usedKeys.Add(key); // Добавляем использованный ключ в набор
+                AvlTree<DateTime, TaskModel> layerTree = treeDictionary[task.Layer];
+                InsertTaskToTree(task, layerTree);
             }
-            int cot = CountNodes(_avlTree.Root);
-            return _avlTree;
+
+            return treeDictionary;
         }
 
+        private bool InsertTaskToTree(TaskModel task, AvlTree<DateTime, TaskModel> tree)
+        {
+            foreach (AvlNode<DateTime, TaskModel> node in tree)
+            {
+                TaskModel existingTask = node.Value;
 
+                if (task.StartTime <= existingTask.DeadLine && task.DeadLine >= existingTask.StartTime)
+                {
+                    // Если задача пересекается с существующей задачей в AVL-дереве, прерываем цикл
+                    return false;
+                }
+            }
+
+            // Если задача не пересекается с существующими задачами, вставляем ее в AVL-дерево
+            tree.Insert(task.StartTime, task);
+            return true;
+        }
 
         private string GetRandomType(Random random)
         {
             string[] types = { "Complete", "InProcess", "UnComplete" };
             return types[random.Next(types.Length)];
         }
-
-        private int CountNodes(AvlNode<int, TaskModel> node)
-        {
-            if (node == null)
-            {
-                return 0;
-            }
-
-            // Рекурсивно подсчитываем количество узлов в левом и правом поддеревьях
-            int leftCount = CountNodes(node.Left);
-            int rightCount = CountNodes(node.Right);
-
-            // Количество узлов в текущем поддереве равно сумме узлов в левом и правом поддеревьях плюс 1 (текущий узел)
-            return leftCount + rightCount + 1;
-        }
-
-
-
-        private bool IsOverlapping(TaskModel task)
-        {
-            foreach (AvlNode<int, TaskModel> node in _avlTree)
-            {
-                TaskModel existingTask = node.Value;
-
-                if (existingTask.Layer == task.Layer &&
-                    (task.StartTime <= existingTask.DeadLine && task.DeadLine >= existingTask.StartTime))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-       
     }
 }
