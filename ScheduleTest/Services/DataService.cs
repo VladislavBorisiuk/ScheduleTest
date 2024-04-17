@@ -3,25 +3,60 @@ using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace ScheduleTest.Services
 {
     internal class DataService : IDataService
     {
-        private readonly Dictionary<int, List<TaskModel>> _layerTaskLists = new Dictionary<int, List<TaskModel>>();
+        private readonly Dictionary<int, ObservableCollection<TaskModel>> _layerTaskObservableCollections = new Dictionary<int, ObservableCollection<TaskModel>>();
 
-        public Dictionary<int, List<TaskModel>> GenerateList()
+        private DateTime lineStartTime;
+        public DateTime LineStartTime
         {
-            var listDictionary = new Dictionary<int, List<TaskModel>>();
+            get => lineStartTime;
+            private set { lineStartTime = value; }
+        }
+
+        private DateTime lineDeadLine;
+        public DateTime LineDeadTime
+        {
+            get => lineDeadLine;
+            private set { lineDeadLine = value; }
+        }
+
+        private int[] counts;
+        public int[] Counts
+        {
+            get => counts;
+            private set { counts = value; }
+        }
+
+        public Dictionary<int, ObservableCollection<TaskModel>> GenerateObservableCollection()
+        {
+            var listDictionary = new Dictionary<int, ObservableCollection<TaskModel>>();
+            Counts = new int[3];
             var treeDictionary = GenerateRandomTrees();
+
+            // Найти самое маленькое значение StartTime
+            LineStartTime = treeDictionary
+                .SelectMany(pair => pair.Value)
+                .Select(node => node.Key)
+                .Min();
+
+            // Найти самое большое значение DeadLine
+            LineDeadTime = treeDictionary
+                .SelectMany(pair => pair.Value)
+                .Select(node => node.Value.DeadLine)
+                .Max();
+
             foreach (var kvp in treeDictionary)
             {
                 var avlTree = kvp.Value;
-                var taskList = avlTree.Select(node => node.Value).ToList();
-                listDictionary[kvp.Key] = taskList;
+                var taskObservableCollection = new ObservableCollection<TaskModel>(avlTree.Select(node => node.Value));
+                listDictionary[kvp.Key] = taskObservableCollection;
             }
-
             return listDictionary;
         }
 
@@ -32,41 +67,46 @@ namespace ScheduleTest.Services
             int count = random.Next(10, 10000);
             for (int i = 0; i < count; i++)
             {
-                // Генерируем случайные даты для StartTime и DeadLine
+
                 DateTime today = DateTime.Today;
-                DateTime startTime = today.AddDays(random.Next(-1000, 1000)); // случайная дата в пределах последних 30 дней
-                DateTime deadLine = startTime.AddDays(random.Next(1, 30)); // случайная дата в пределах следующих 30 дней
+                DateTime startTime = today.AddDays(random.Next(-10, 150)).AddHours(random.Next(0,24)); 
+                DateTime deadLine = startTime.AddDays(random.Next(1, 30)).AddHours(random.Next(0, 24));
 
                 TaskModel task = new TaskModel
                 {
                     DeadLine = deadLine,
                     StartTime = startTime,
                     Type = GetRandomType(random),
-                    Layer = random.Next(1, 50)
+                    Layer = random.Next(1, 10),
+                    TaskSheduleNumber = random.Next(1, 6)
                 };
-                AvlTree<DateTime, TaskModel> layerTree = treeDictionary[task.Layer];
-                InsertTaskToTree(task, layerTree);
-            }
 
-            return treeDictionary;
-        }
+                int layer = task.Layer;
 
-        private bool InsertTaskToTree(TaskModel task, AvlTree<DateTime, TaskModel> tree)
-        {
-            foreach (AvlNode<DateTime, TaskModel> node in tree)
-            {
-                TaskModel existingTask = node.Value;
-
-                if (task.StartTime <= existingTask.DeadLine && task.DeadLine >= existingTask.StartTime)
+                if (!treeDictionary.ContainsKey(layer))
                 {
-                    // Если задача пересекается с существующей задачей в AVL-дереве, прерываем цикл
-                    return false;
+                    treeDictionary[layer] = new AvlTree<DateTime, TaskModel>();
+                }
+
+                AvlTree<DateTime, TaskModel> layerTree = treeDictionary[layer];
+
+                layerTree.Insert(task.StartTime, task);
+
+                switch (task.Type)
+                {
+                    case "Complete":
+                        Counts[0]++;
+                        break;
+                    case "InProcess":
+                        Counts[1]++;
+                        break;
+                    case "UnComplete":
+                        Counts[2]++;
+                        break;
                 }
             }
 
-            // Если задача не пересекается с существующими задачами, вставляем ее в AVL-дерево
-            tree.Insert(task.StartTime, task);
-            return true;
+            return treeDictionary;
         }
 
         private string GetRandomType(Random random)

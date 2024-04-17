@@ -12,14 +12,37 @@ namespace ScheduleTest.ViewModels
         private readonly IUserDialog _UserDialog;
         private readonly IDataService _DataService;
 
+        #region Аттрибуты
+        private Dictionary<int, ObservableCollection<TaskModel>> taskList;
 
-        private Dictionary<int, List<TaskModel>> taskList;
-
-        public Dictionary<int, List<TaskModel>> TaskList
+        public Dictionary<int, ObservableCollection<TaskModel>> TaskList
         {
             get => taskList;
 
             set => taskList = value;
+        }
+
+        public DateTime StartTime
+        {
+            get => _DataService.LineStartTime;
+        }
+
+        public DateTime DeadTime
+        {
+            get => _DataService.LineDeadTime;
+        }
+
+        private int scheduleNumber = 4;
+
+        public int ScheduleNumber
+        {
+            get => scheduleNumber;
+
+            set
+            {
+                scheduleNumber = value;
+                OnPropertyChanged(nameof(ScheduleNumber));
+            }
         }
 
         private int[] counts ;
@@ -38,6 +61,7 @@ namespace ScheduleTest.ViewModels
 
             set => models = value;
         }
+        #endregion
         #region Title : string - Заголовок окна
 
         /// <summary>Заголовок окна</summary>
@@ -63,57 +87,10 @@ namespace ScheduleTest.ViewModels
             _UserDialog = UserDialog;
             _DataService = DataService;
 
-            TaskList = _DataService.GenerateList();
+            TaskList = _DataService.GenerateObservableCollection();
 
-            Counts = new int[3];
-            TypeCount();
+            Counts = _DataService.Counts;
+            
         }
-        
-        private async Task TypeCount()
-        {
-            foreach (var task in TaskList)
-            {
-                foreach (var item in task.Value)
-                {
-                    switch (item.Type)
-                    {
-                        case "Complete":
-                            Counts[0]++;
-                            break;
-                        case "InProcess":
-                            Counts[1]++;
-                            break;
-                        case "UnComplete":
-                            Counts[2]++;
-                            break;
-                    }
-                }
-            }
-        }
-        private static void Traverse(AvlNode<DateTime, TaskModel> node, ObservableCollection<TaskModel> collection)
-        {
-            if (node != null)
-            {
-                Traverse(node.Left, collection);
-                collection.Add(node.Value);
-                Traverse(node.Right, collection);
-            }
-        }
-
-        private int CountNodes(AvlNode<DateTime, TaskModel> node)
-        {
-            if (node == null)
-            {
-                return 0;
-            }
-
-            // Рекурсивно подсчитываем количество узлов в левом и правом поддеревьях
-            int leftCount = CountNodes(node.Left);
-            int rightCount = CountNodes(node.Right);
-
-            // Количество узлов в текущем поддереве равно сумме узлов в левом и правом поддеревьях плюс 1 (текущий узел)
-            return leftCount + rightCount + 1;
-        }
-
     }
 }

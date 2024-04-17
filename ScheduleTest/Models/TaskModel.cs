@@ -10,8 +10,10 @@ namespace ScheduleTest.Models
 
         public string Type { get; set; }
 
+        public int TaskSheduleNumber { get; set; }
+
         public int Layer { get; set; }
 
-        public double Wight => (DeadLine - StartTime).TotalMinutes / 900;
+        public double Width => (DeadLine - StartTime).TotalMinutes / 90;
     }
 }
