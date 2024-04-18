@@ -1,4 +1,5 @@
 ﻿using Bitlush;
+using ScheduleTest.Infrastructure.Commands;
 using ScheduleTest.Infrastructure.Commands.Base;
 using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
@@ -14,13 +15,14 @@ namespace ScheduleTest.ViewModels
         private readonly IDataService _DataService;
 
         #region Комманды
-        public CommandAsync GenerateSchedule { get; }
+        public LambdaCommandAsync GenerateSchedule { get; }
         private bool CanGenerateScheduleAsyncExecute(object p) => true;
 
         private async Task GenerateScheduleAsyncExecute(object barabanName)
         {
             TaskList = await _DataService.GenerateObservableCollectionAsync();
             counts = _DataService.Counts;
+            OnPropertyChanged(nameof(ScheduleNumber));
         }
         #endregion
         #region Аттрибуты
@@ -30,7 +32,15 @@ namespace ScheduleTest.ViewModels
         {
             get => taskList;
 
-            set => taskList = value;
+            set
+            {
+                taskList= value;
+                counts = _DataService.Counts;
+                OnPropertyChanged(nameof(TaskList));
+                OnPropertyChanged(nameof(CountsComplete));
+                OnPropertyChanged(nameof(CountsInProc));
+                OnPropertyChanged(nameof(CountsUnCom));
+            }
         }
 
         public DateTime StartTime
@@ -62,6 +72,7 @@ namespace ScheduleTest.ViewModels
         public string CountsComplete
         {
             get => counts[0].ToString() + " Complete";
+            
         }
 
         public string CountsInProc
@@ -106,7 +117,8 @@ namespace ScheduleTest.ViewModels
         {
             _UserDialog = UserDialog;
             _DataService = DataService;
-            
+            counts = new int[] {0, 0, 0};
+            GenerateSchedule = new LambdaCommandAsync(GenerateScheduleAsyncExecute, CanGenerateScheduleAsyncExecute);
         }
     }
 }

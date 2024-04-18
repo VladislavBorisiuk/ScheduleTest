@@ -64,13 +64,13 @@ namespace ScheduleTest.Services
         {
             var treeDictionary = new Dictionary<int, AvlTree<DateTime, TaskModel>>();
             Random random = new Random();
-            int count = random.Next(10, 20);
+            int count = random.Next(10, 20000);
             for (int i = 0; i < count; i++)
             {
 
                 DateTime today = DateTime.Today;
-                DateTime startTime = today.AddDays(random.Next(-3, 3)).AddHours(random.Next(0, 12)).AddMinutes(random.Next(0, 60));
-                DateTime deadLine = startTime.AddDays(random.Next(0, 2)).AddHours(random.Next(1, 12)).AddMinutes(random.Next(0, 60));
+                DateTime startTime = today.AddDays(random.Next(-30, 30)).AddHours(random.Next(0, 12)).AddMinutes(random.Next(0, 60));
+                DateTime deadLine = startTime.AddDays(random.Next(0, 20)).AddHours(random.Next(1, 12)).AddMinutes(random.Next(0, 60));
 
                 TaskModel task = new TaskModel
                 {
