@@ -3,7 +3,7 @@ namespace ScheduleTest.Models
 {
     public class TaskModel
     {
-        public string Name => StartTime.ToString() +" "+ DeadLine.ToString();
+        public string Name { get; set; }
         public DateTime DeadLine { get; set; }
 
         public DateTime StartTime { get; set; }
@@ -14,6 +14,6 @@ namespace ScheduleTest.Models
 
         public int Layer { get; set; }
 
-        public double Width => (DeadLine - StartTime).TotalMinutes / 90;
+        public double Width => (DeadLine - StartTime).TotalMinutes;
     }
 }

@@ -14,10 +14,17 @@ namespace ScheduleTest.Infrastructure.Converters
                 {
                     int timelineSheduleNumber = (int)values[0];
                     int taskSheduleNumber = (int)values[1];
-                    return timelineSheduleNumber == taskSheduleNumber;
+                    if(timelineSheduleNumber == taskSheduleNumber)
+                    {
+                        return Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    return Visibility.Collapsed;
                 }
             }
-            return false;
+            return Visibility.Collapsed;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

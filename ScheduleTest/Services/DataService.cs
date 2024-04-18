@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ScheduleTest.Services
 {
     internal class DataService : IDataService
     {
-        private readonly Dictionary<int, ObservableCollection<TaskModel>> _layerTaskObservableCollections = new Dictionary<int, ObservableCollection<TaskModel>>();
 
         private DateTime lineStartTime;
         public DateTime LineStartTime
@@ -33,7 +33,7 @@ namespace ScheduleTest.Services
             private set { counts = value; }
         }
 
-        public Dictionary<int, ObservableCollection<TaskModel>> GenerateObservableCollection()
+        public async Task<Dictionary<int, ObservableCollection<TaskModel>>> GenerateObservableCollectionAsync()
         {
             var listDictionary = new Dictionary<int, ObservableCollection<TaskModel>>();
             Counts = new int[3];
@@ -64,16 +64,17 @@ namespace ScheduleTest.Services
         {
             var treeDictionary = new Dictionary<int, AvlTree<DateTime, TaskModel>>();
             Random random = new Random();
-            int count = random.Next(10, 10000);
+            int count = random.Next(10, 20);
             for (int i = 0; i < count; i++)
             {
 
                 DateTime today = DateTime.Today;
-                DateTime startTime = today.AddDays(random.Next(-10, 150)).AddHours(random.Next(0,24)); 
-                DateTime deadLine = startTime.AddDays(random.Next(1, 30)).AddHours(random.Next(0, 24));
+                DateTime startTime = today.AddDays(random.Next(-3, 3)).AddHours(random.Next(0, 12)).AddMinutes(random.Next(0, 60));
+                DateTime deadLine = startTime.AddDays(random.Next(0, 2)).AddHours(random.Next(1, 12)).AddMinutes(random.Next(0, 60));
 
                 TaskModel task = new TaskModel
                 {
+                    Name = "Task " + i.ToString(),
                     DeadLine = deadLine,
                     StartTime = startTime,
                     Type = GetRandomType(random),

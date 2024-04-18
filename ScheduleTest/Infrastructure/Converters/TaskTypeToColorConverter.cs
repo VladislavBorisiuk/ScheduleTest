@@ -1,40 +1,53 @@
-﻿using System.Globalization;
+﻿
+using System;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-
 namespace ScheduleTest.Infrastructure.Converters
 {
-    public class TaskTypeToColorConverter : IValueConverter
+    public class TaskTypeToColorConverter : IMultiValueConverter
     {
-        // Создаем статические экземпляры кистей для каждого цвета
         private static readonly SolidColorBrush GreenBrush = new SolidColorBrush(Colors.Green);
         private static readonly SolidColorBrush YellowBrush = new SolidColorBrush(Colors.Yellow);
         private static readonly SolidColorBrush RedBrush = new SolidColorBrush(Colors.Red);
         private static readonly SolidColorBrush TransparentBrush = new SolidColorBrush(Colors.Transparent);
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string type)
+            if (values != null && values.Length == 3)
             {
-                // Возвращаем соответствующий кисть в зависимости от значения
-                switch (type)
+
+                switch (values[0])
                 {
                     case "Complete":
-                        return GreenBrush;
+                        return ApplyTransparency(GreenBrush, (int)values[1], (int)values[2]);
                     case "InProcess":
-                        return YellowBrush;
+                        return ApplyTransparency(YellowBrush, (int)values[1], (int)values[2]);
                     case "UnComplete":
-                        return RedBrush;
+                        return ApplyTransparency(RedBrush, (int)values[1], (int)values[2]);
                     default:
-                        return TransparentBrush;
+                        return ApplyTransparency(TransparentBrush, (int)values[1], (int)values[2]);
                 }
             }
             return TransparentBrush;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        private SolidColorBrush ApplyTransparency(SolidColorBrush brush, int cSh, int taskSh)
+        {
+            if (cSh == taskSh)
+            {
+                brush.Opacity = 1;
+                return brush;
+            }
+            brush.Opacity = 0.4;
+            return brush;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
     }
 }
+

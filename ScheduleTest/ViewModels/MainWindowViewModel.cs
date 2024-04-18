@@ -1,4 +1,5 @@
 ﻿using Bitlush;
+using ScheduleTest.Infrastructure.Commands.Base;
 using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
 using ScheduleTest.ViewModels.Base;
@@ -12,6 +13,16 @@ namespace ScheduleTest.ViewModels
         private readonly IUserDialog _UserDialog;
         private readonly IDataService _DataService;
 
+        #region Комманды
+        public CommandAsync GenerateSchedule { get; }
+        private bool CanGenerateScheduleAsyncExecute(object p) => true;
+
+        private async Task GenerateScheduleAsyncExecute(object barabanName)
+        {
+            TaskList = await _DataService.GenerateObservableCollectionAsync();
+            counts = _DataService.Counts;
+        }
+        #endregion
         #region Аттрибуты
         private Dictionary<int, ObservableCollection<TaskModel>> taskList;
 
@@ -32,7 +43,7 @@ namespace ScheduleTest.ViewModels
             get => _DataService.LineDeadTime;
         }
 
-        private int scheduleNumber = 4;
+        private int scheduleNumber;
 
         public int ScheduleNumber
         {
@@ -45,13 +56,22 @@ namespace ScheduleTest.ViewModels
             }
         }
 
-        private int[] counts ;
-        
-        public int[] Counts
-        {
-            get => counts;
+        private int[] counts;
 
-            set => counts = value;
+        
+        public string CountsComplete
+        {
+            get => counts[0].ToString() + " Complete";
+        }
+
+        public string CountsInProc
+        {
+            get => counts[1].ToString() + " Pending";
+        }
+
+        public string CountsUnCom
+        {
+            get => counts[2].ToString() + " Jeopardy";
         }
 
         private ObservableCollection<TaskModel> models;
@@ -86,10 +106,6 @@ namespace ScheduleTest.ViewModels
         {
             _UserDialog = UserDialog;
             _DataService = DataService;
-
-            TaskList = _DataService.GenerateObservableCollection();
-
-            Counts = _DataService.Counts;
             
         }
     }

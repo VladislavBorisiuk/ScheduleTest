@@ -14,78 +14,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <vm:ViewModelLocator x:Key="Locator"/>
+            
 
-            <Style TargetType="UserCon:TimeLineControl">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="UserCon:TimeLineControl">
-                            <Grid >
-                                <Grid.Resources>
-                                    <con:StartTimeToMarginConverter x:Key="StartTimeToMarginConverter"/>
-                                    <con:StartTimeToWidthConverter x:Key="StartTimeToWidthConverter"/>
-                                    <con:TaskTypeToColorConverter x:Key="TaskTypeToColorConverter"/>
-                                    <con:TaskSheduleNumberToIsEnabledConverter x:Key="TaskSheduleNumberToIsEnabledConverter"/>
-                                </Grid.Resources>
-                                <Grid.Width>
-                                    <MultiBinding Converter="{StaticResource StartTimeToWidthConverter}">
-                                        <Binding Path="StartTime" />
-                                        <Binding Path="DeadTime"/>
-                                    </MultiBinding>
-                                </Grid.Width>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Grid.Row="0">
-                                    <TextBlock Text="Line Start Time: " Margin="5"/>
-                                    <TextBlock Text="{Binding StartTime, StringFormat='dd.MM.yyyy HH:mm'}" Margin="5"/>
-                                    <TextBlock Text="Line DeadLine: " Margin="5"/>
-                                    <TextBlock Text="{Binding DeadTime, StringFormat='dd.MM.yyyy HH:mm'}" Margin="5"/>
-                                </StackPanel>
-                                <ItemsControl ItemsSource="{TemplateBinding ItemsSource}" Grid.Row="1">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <!-- Используем UniformGrid для автоматического позиционирования элементов по вертикали -->
-                                            <WrapPanel Orientation="Vertical"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <ItemsControl ItemsSource="{Binding Value}" Margin="0,0,0,40">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <!-- Используем Canvas для позиционирования элементов -->
-                                                        <Canvas/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Width="{Binding Width}" Height="20" Background="{Binding Type, Converter={StaticResource TaskTypeToColorConverter}}"
-                                                                Text="{Binding Name}" >
-                                                            <TextBlock.IsEnabled>
-                                                                <MultiBinding Converter="{StaticResource TaskSheduleNumberToIsEnabledConverter}">
-                                                                    <Binding RelativeSource="{RelativeSource AncestorType={x:Type UserCon:TimeLineControl}}" Path="ScheduleNumber"/>
-                                                                    <Binding Path="TaskSheduleNumber"/>
-                                                                </MultiBinding>
-                                                            </TextBlock.IsEnabled>
-                                                            <TextBlock.Margin>
-                                                                     <MultiBinding Converter="{StaticResource StartTimeToMarginConverter}">
-                                                                         <Binding Path="LineStartTime" RelativeSource="{RelativeSource AncestorType={x:Type UserCon:TimeLineControl}}"/>
-                                                                         <Binding Path="StartTime"/>
-                                                                     </MultiBinding>
-                                                                </TextBlock.Margin>
-                                                        </TextBlock>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

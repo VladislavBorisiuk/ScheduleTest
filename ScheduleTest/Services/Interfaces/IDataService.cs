@@ -21,7 +21,12 @@ namespace ScheduleTest.Services.Interfaces
         {
             get;
         }
-        public Dictionary<int, ObservableCollection<TaskModel>> GenerateObservableCollection();
+        public async Task<Dictionary<int, ObservableCollection<TaskModel>>> GenerateObservableCollectionAsync() 
+        {
+            throw new NotImplementedException();
+        }
+
+
 
     }
 }

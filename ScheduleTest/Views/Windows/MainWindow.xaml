@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:ScheduleTest.ViewModels"
         xmlns:views="clr-namespace:ScheduleTest.Views"
         xmlns:models="clr-namespace:ScheduleTest.Models"
+        xmlns:fa="http://schemas.fontawesome.com/icons/svg"
         xmlns:con="clr-namespace:ScheduleTest.Infrastructure.Converters"
         xmlns:l="clr-namespace:ScheduleTest" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         
@@ -11,16 +12,6 @@
         Title="{Binding Title}"
         Width="800" Height="450">
     <DockPanel>
-        <Menu DockPanel.Dock="Top" IsMainMenu="True">
-            <Menu.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <DockPanel LastChildFill="False"/>
-                </ItemsPanelTemplate>
-            </Menu.ItemsPanel>
-            <MenuItem Header="Файл">
-                <MenuItem Header="Выход" Command="{StaticResource CloseWindowCommand}"/>
-            </MenuItem>
-        </Menu>
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem DockPanel.Dock="Right">
                 <ResizeGrip/>
@@ -28,24 +19,98 @@
             <StatusBarItem Content="{Binding Status}"/>
         </StatusBar>
         <Grid>
+            <Grid.Resources>
+                <Style TargetType="views:TimeLineControl">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="views:TimeLineControl">
+                                <Grid x:Name="MainGrid" Background="LightGray">
+                                    <Grid.Resources>
+                                        <con:StartTimeToMarginConverter x:Key="StartTimeToMarginConverter"/>
+                                        <con:StartTimeToWidthConverter x:Key="StartTimeToWidthConverter"/>
+                                        <con:TaskTypeToColorConverter x:Key="TaskTypeToColorConverter"/>
+                                        <con:TaskSheduleNumberToIsEnabledConverter x:Key="TaskSheduleNumberToIsEnabledConverter"/>
+                                    </Grid.Resources>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ScrollViewer  HorizontalScrollBarVisibility="Visible" Grid.Column="0" Grid.Row="1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="50"/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <views:TimeLineInterfaceControl Grid.Row="0" StartTime="{Binding StartTime}" EndTime="{Binding DeadTime}" TimeStep="60"/>
+                                            <ItemsControl ItemsSource="{TemplateBinding ItemsSource}" Background="Gray" Grid.Row="1">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <!-- Используем Grid для автоматического расширения элементов по вертикали -->
+                                                        <WrapPanel Orientation="Vertical"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <ItemsControl x:Name="ItemCon" ItemsSource="{Binding Value}" Margin="20">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <Grid/>
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <TextBlock Width="{Binding Width}" Height="40"         
+                                                        Text="{Binding Name}" FontWeight="Bold" >
+                                                                            <TextBlock.Background>
+                                                                                <MultiBinding Converter="{StaticResource TaskTypeToColorConverter}">
+                                                                                    <Binding Path="Type"/>
+                                                                                    <Binding RelativeSource="{RelativeSource AncestorType={x:Type views:TimeLineControl}}" Path="ScheduleNumber"/>
+                                                                                    <Binding Path="TaskSheduleNumber"/>
+                                                                                </MultiBinding>
+                                                                            </TextBlock.Background>
+                                                                        </TextBlock>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                            <Line X1="0" Y1="0" X2="{Binding ActualWidth, ElementName=ItemCon}"  Y2="0" Stroke="#CCCCCC" StrokeThickness="2"  Margin="2"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                        </Setter>
+                </Style>
+            </Grid.Resources>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0">
-                <ListBox ItemsSource="{Binding Counts}" DockPanel.Dock="Left">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                </ListBox>
-                <Button DockPanel.Dock="Right" Width="200"/>
-                <TextBox x:Name="Number" DockPanel.Dock="Left" Width="200" Text="{Binding ScheduleNumber}"/>
-            </DockPanel>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Grid.Row="1">
-                <views:TimeLineControl ItemsSource="{Binding TaskList}" LineStartTime="{Binding StartTime}" LineDeadLine="{Binding DeadTime}" ScheduleNumber="{Binding ScheduleNumber}"/>
-            </ScrollViewer>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Background="Gray">
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="Regular_CircleCheck" Height="12" PrimaryColor="Green" />
+                    <TextBlock Text="{Binding CountsComplete}" Margin="5"/>
+                    <fa:ImageAwesome Icon="Regular_Circle" Height="12" PrimaryColor="Yellow" />
+                    <TextBlock Text="{Binding CountsInProc}" Margin="5"/>
+                    <fa:ImageAwesome Icon="Solid_Ban" Height="12" PrimaryColor="Red" />
+                    <TextBlock Text="{Binding CountsUnCom}" Margin="5"/>
+                </StackPanel>
+                <TextBlock Text="Номер графика:" Margin="50 0 0 0"/>
+                <TextBox x:Name="Number" DockPanel.Dock="Left" Width="24" Text="{Binding ScheduleNumber}" Height="21"/>
+                <Image Source="/Images/Generate.png" Width="100" Margin="50 0 0 0"/>
+            </StackPanel>
+            <views:TimeLineControl ItemsSource="{Binding TaskList}" LineStartTime="{Binding StartTime}" LineDeadLine="{Binding DeadTime}" ScheduleNumber="{Binding ScheduleNumber}" Grid.Column="0" Grid.Row="1"/>
         </Grid>
     </DockPanel>
 </Window>
