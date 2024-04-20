@@ -20,6 +20,10 @@
         </StatusBar>
         <Grid>
             <Grid.Resources>
+                <con:StartTimeToMarginConverter x:Key="StartTimeToMarginConverter"/>
+                <con:StartTimeToWidthConverter x:Key="StartTimeToWidthConverter"/>
+                <con:TaskTypeToColorConverter x:Key="TaskTypeToColorConverter"/>
+                <con:TaskSheduleNumberToIsEnabledConverter x:Key="TaskSheduleNumberToIsEnabledConverter"/>
                 <Style TargetType="views:TimeLineControl">
                     <Setter Property="Template">
                         <Setter.Value>
@@ -46,18 +50,18 @@
                                                 <RowDefinition/>
                                             </Grid.RowDefinitions>
                                             <views:TimeLineInterfaceControl Grid.Row="0" StartTime="{Binding StartTime}" EndTime="{Binding DeadTime}" TimeStep="60"/>
-                                            <ItemsControl ItemsSource="{TemplateBinding ItemsSource}" Background="Gray" Grid.Row="1">
+                                            <ItemsControl ItemsSource="{TemplateBinding ItemsSource}" Background="Gray" Grid.Row="1" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <!-- Используем Grid для автоматического расширения элементов по вертикали -->
-                                                        <WrapPanel Orientation="Vertical"/>
+                                                        <StackPanel Orientation="Vertical"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Grid>
-                                                            <ItemsControl x:Name="ItemCon" ItemsSource="{Binding Value}" Margin="20">
-                                                                <ItemsControl.ItemsPanel>
+                                                            <ItemsControl x:Name="ItemCon" ItemsSource="{Binding Value}" Margin="20" VirtualizingStackPanel.IsVirtualizing ="True"
+                                                                          VirtualizingStackPanel.VirtualizationMode ="Recycling">
+                                                            <ItemsControl.ItemsPanel>
                                                                     <ItemsPanelTemplate>
                                                                         <Grid/>
                                                                     </ItemsPanelTemplate>
@@ -110,10 +114,29 @@
                 <TextBox x:Name="Number" DockPanel.Dock="Left" Width="24" Text="{Binding ScheduleNumber}" Height="21"/>
                 <Button Command="{Binding GenerateSchedule}"  Width="100"/>
                 <Image Source="/Images/Generate.png" Width="100" Margin="50 0 0 0">
-                    
+
                 </Image>
             </StackPanel>
-            <views:TimeLineControl ItemsSource="{Binding TaskList}" LineStartTime="{Binding StartTime}" LineDeadLine="{Binding DeadTime}" ScheduleNumber="{Binding ScheduleNumber}" Grid.Column="0" Grid.Row="1"/>
+            <ScrollViewer Grid.Row="1" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                <ListBox ItemsSource="{Binding TaskListTest}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Width="{Binding Width}" Height="40"         
+Text="{Binding Name}" FontWeight="Bold" >
+                                <TextBlock.Background>
+                                    <MultiBinding Converter="{StaticResource TaskTypeToColorConverter}">
+                                        <Binding Path="Type"/>
+                                        <Binding Path="TaskSheduleNumber"/>
+                                        <Binding Path="TaskSheduleNumber"/>
+                                    </MultiBinding>
+                                </TextBlock.Background>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
+            
         </Grid>
+        
     </DockPanel>
 </Window>

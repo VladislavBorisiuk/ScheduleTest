@@ -1,6 +1,8 @@
 ﻿using Bitlush;
 using ScheduleTest.Infrastructure.Commands;
 using ScheduleTest.Infrastructure.Commands.Base;
+using ScheduleTest.Infrastructure.Extensions;
+using ScheduleTest.Infrastructure.Extensions.Base;
 using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
 using ScheduleTest.ViewModels.Base;
@@ -20,15 +22,29 @@ namespace ScheduleTest.ViewModels
 
         private async Task GenerateScheduleAsyncExecute(object barabanName)
         {
-            TaskList = await _DataService.GenerateObservableCollectionAsync();
+            TaskList = await _DataService.GenerateVirtualizingCollectionsAsync();
             counts = _DataService.Counts;
             OnPropertyChanged(nameof(ScheduleNumber));
         }
         #endregion
         #region Аттрибуты
-        private Dictionary<int, ObservableCollection<TaskModel>> taskList;
+        private AsyncVirtualizingCollection<TaskModel> taskListTest;
 
-        public Dictionary<int, ObservableCollection<TaskModel>> TaskList
+        public AsyncVirtualizingCollection<TaskModel> TaskListTest
+        {
+            get
+            {
+                if (TaskList != null) 
+                {
+                    return TaskList[1];
+                }
+                return null;
+            }
+        }
+
+        private Dictionary<int, AsyncVirtualizingCollection<TaskModel>> taskList;
+
+        public Dictionary<int, AsyncVirtualizingCollection<TaskModel>> TaskList
         {
             get => taskList;
 
@@ -36,7 +52,9 @@ namespace ScheduleTest.ViewModels
             {
                 taskList= value;
                 counts = _DataService.Counts;
+
                 OnPropertyChanged(nameof(TaskList));
+                OnPropertyChanged(nameof(TaskListTest));
                 OnPropertyChanged(nameof(CountsComplete));
                 OnPropertyChanged(nameof(CountsInProc));
                 OnPropertyChanged(nameof(CountsUnCom));
@@ -117,7 +135,7 @@ namespace ScheduleTest.ViewModels
         {
             _UserDialog = UserDialog;
             _DataService = DataService;
-            counts = new int[] {0, 0, 0};
+            counts = new int[] { 0, 0, 0 };
             GenerateSchedule = new LambdaCommandAsync(GenerateScheduleAsyncExecute, CanGenerateScheduleAsyncExecute);
         }
     }

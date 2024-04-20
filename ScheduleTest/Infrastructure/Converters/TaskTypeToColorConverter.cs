@@ -15,6 +15,14 @@ namespace ScheduleTest.Infrastructure.Converters
 
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values[1] == DependencyProperty.UnsetValue)
+            {
+                values[1] = 1;
+            }
+            if (values[2] == DependencyProperty.UnsetValue)
+            {
+                values[2] = 1;
+            }
             if (values != null && values.Length == 3)
             {
 

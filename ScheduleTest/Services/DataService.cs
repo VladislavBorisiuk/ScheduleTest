@@ -1,4 +1,5 @@
 ﻿using Bitlush;
+using ScheduleTest.Infrastructure.Extensions;
 using ScheduleTest.Models;
 using ScheduleTest.Services.Interfaces;
 using System;
@@ -33,9 +34,9 @@ namespace ScheduleTest.Services
             private set { counts = value; }
         }
 
-        public async Task<Dictionary<int, ObservableCollection<TaskModel>>> GenerateObservableCollectionAsync()
+        public async Task<Dictionary<int, AsyncVirtualizingCollection<TaskModel>>> GenerateVirtualizingCollectionsAsync()
         {
-            var listDictionary = new Dictionary<int, ObservableCollection<TaskModel>>();
+            var collectionDictionary = new Dictionary<int, AsyncVirtualizingCollection<TaskModel>>();
             Counts = new int[3];
             var treeDictionary = GenerateRandomTrees();
 
@@ -54,17 +55,19 @@ namespace ScheduleTest.Services
             foreach (var kvp in treeDictionary)
             {
                 var avlTree = kvp.Value;
-                var taskObservableCollection = new ObservableCollection<TaskModel>(avlTree.Select(node => node.Value));
-                listDictionary[kvp.Key] = taskObservableCollection;
+                var itemsProvider = new TaskModelProvider(avlTree.Select(node => node.Value).ToList());
+                var asyncVirtualizingCollection = new AsyncVirtualizingCollection<TaskModel>(itemsProvider,100,1000);
+                collectionDictionary[kvp.Key] = asyncVirtualizingCollection;
             }
-            return listDictionary;
+
+            return collectionDictionary;
         }
 
         private Dictionary<int, AvlTree<DateTime, TaskModel>> GenerateRandomTrees()
         {
             var treeDictionary = new Dictionary<int, AvlTree<DateTime, TaskModel>>();
             Random random = new Random();
-            int count = random.Next(10, 20000);
+            int count = random.Next(10000, 20000);
             for (int i = 0; i < count; i++)
             {
 
@@ -78,7 +81,7 @@ namespace ScheduleTest.Services
                     DeadLine = deadLine,
                     StartTime = startTime,
                     Type = GetRandomType(random),
-                    Layer = random.Next(1, 10),
+                    Layer = random.Next(1, 2),
                     TaskSheduleNumber = random.Next(1, 6)
                 };
 

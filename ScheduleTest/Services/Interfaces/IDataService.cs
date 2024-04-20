@@ -1,4 +1,5 @@
 ﻿using Bitlush;
+using ScheduleTest.Infrastructure.Extensions;
 using ScheduleTest.Models;
 using System.Collections.ObjectModel;
 
@@ -21,7 +22,7 @@ namespace ScheduleTest.Services.Interfaces
         {
             get;
         }
-        public async Task<Dictionary<int, ObservableCollection<TaskModel>>> GenerateObservableCollectionAsync() 
+        public async Task<Dictionary<int, AsyncVirtualizingCollection<TaskModel>>> GenerateVirtualizingCollectionsAsync() 
         {
             throw new NotImplementedException();
         }
